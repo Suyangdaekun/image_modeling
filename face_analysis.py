@@ -11,100 +11,118 @@ face_mesh = mp_face_mesh.FaceMesh(
     min_detection_confidence=0.7
 )
 
-def get_facial_proportions(landmarks, img_width, img_height):
-    # 전통 관상학 궁위 기준 측정값 계산
-    proportions = {
-        # 관록궁(이마)
-        '관록궁': {
-            'width': np.linalg.norm(landmarks[21] - landmarks[251]),
-            'height': np.linalg.norm(landmarks[10] - landmarks[168])
-        },
-        
-        # 재백궁(코)
-        '재백궁': {
-            'length': np.linalg.norm(landmarks[4] - landmarks[168]),
-            'straightness': np.mean([landmarks[168][1], landmarks[6][1], landmarks[4][1]])
-        },
-        
-        # 복덕궁(왼쪽 뺨)
-        '복덕궁': {
-            'fullness': np.linalg.norm(landmarks[132] - landmarks[93])
-        },
-        
-        # 천상궁(오른쪽 뺨)
-        '천상궁': {
-            'fullness': np.linalg.norm(landmarks[361] - landmarks[323])
-        },
-        
-        # 인중(인중)
-        '인중': {
-            'depth': landmarks[0][2] - landmarks[17][2],
-            'length': np.linalg.norm(landmarks[0] - landmarks[17])
-        }
+def get_face_measurements(landmarks, img_width, img_height):
+    # 눈 관련 랜드마크 인덱스 (MediaPipe Face Mesh 기준)
+    LEFT_EYE = [33, 133]  # 왼쪽 눈 외각, 내각
+    RIGHT_EYE = [362, 263]  # 오른쪽 눈 외각, 내각
+    EYE_VERTICAL = [159, 145, 386, 374]  # 각 눈의 상하 지점 (왼쪽 위/아래, 오른쪽 위/아래)
+
+    # 코 측정 지점
+    NOSE_LENGTH = [168, 4]  # 코 시작점(미간) ~ 코 끝점
+    NOSE_WIDTH = [358, 129]  # 코 양쪽 가장자리 (코의 가로 폭)
+
+    # 입 측정 지점
+    MOUTH_WIDTH = [78, 308]  # 입 양쪽 끝
+    MOUTH_HEIGHT = [13, 14]  # 입 상하 지점
+
+    measurements = {}
+
+    # 왼쪽 눈 측정
+    left_eye_width = np.linalg.norm(landmarks[LEFT_EYE[0]] - landmarks[LEFT_EYE[1]])
+    left_eye_height = (np.linalg.norm(landmarks[EYE_VERTICAL[0]] - landmarks[EYE_VERTICAL[1]]) +
+                       np.linalg.norm(landmarks[EYE_VERTICAL[2]] - landmarks[EYE_VERTICAL[3]])) / 2
+
+    # 오른쪽 눈 측정
+    right_eye_width = np.linalg.norm(landmarks[RIGHT_EYE[0]] - landmarks[RIGHT_EYE[1]])
+    right_eye_height = (np.linalg.norm(landmarks[EYE_VERTICAL[2]] - landmarks[EYE_VERTICAL[3]]) +
+                        np.linalg.norm(landmarks[EYE_VERTICAL[0]] - landmarks[EYE_VERTICAL[1]])) / 2
+
+    measurements['eyes'] = {
+        'left_width_px': int(left_eye_width),
+        'left_height_px': int(left_eye_height),
+        'right_width_px': int(right_eye_width),
+        'right_height_px': int(right_eye_height),
+        'width_diff_px': abs(int(left_eye_width) - int(right_eye_width)),
+        'height_diff_px': abs(int(left_eye_height) - int(right_eye_height))
     }
-    
-    # 상대적 비율 계산
-    face_width = np.linalg.norm(landmarks[454] - landmarks[234])
-    for key in proportions:
-        for subkey in proportions[key]:
-            proportions[key][subkey] /= face_width  # 얼굴 너비 기준 정규화
-            
-    return proportions
 
-def generate_face_reading(proportions):
-    analysis = []
-    
-    # 관록궁 분석 (이마)
-    관록_평균 = (proportions['관록궁']['width'] + proportions['관록궁']['height']) / 2
-    if 관록_평균 > 0.35:
-        analysis.append("[관록궁] 넓고 높은 이마")
+    # 코 측정
+    nose_length = np.linalg.norm(landmarks[NOSE_LENGTH[0]] - landmarks[NOSE_LENGTH[1]])  # 코 길이 (세로)
+    nose_width = np.linalg.norm(landmarks[NOSE_WIDTH[0]] - landmarks[NOSE_WIDTH[1]])  # 코 너비 (가로)
+
+    measurements['nose'] = {
+        'length_px': int(nose_length),  # 코 길이 (세로)
+        'width_px': int(nose_width)     # 코 너비 (가로)
+    }
+
+    # 입 측정
+    mouth_width = np.linalg.norm(landmarks[MOUTH_WIDTH[0]] - landmarks[MOUTH_WIDTH[1]])
+    mouth_height = np.linalg.norm(landmarks[MOUTH_HEIGHT[0]] - landmarks[MOUTH_HEIGHT[1]])
+
+    measurements['mouth'] = {
+        'width_px': int(mouth_width),
+        'height_px': int(mouth_height)
+    }
+
+    return measurements
+
+
+def generate_measurement_report(measurements):
+    report = []
+
+    # 눈 분석
+    eyes = measurements['eyes']
+    report.append(f"눈 분석:")
+    report.append(f"- 왼쪽 눈: {eyes['left_width_px']}px (가로) × {eyes['left_height_px']}px (세로)")
+    report.append(f"- 오른쪽 눈: {eyes['right_width_px']}px (가로) × {eyes['right_height_px']}px (세로)")
+
+    if eyes['width_diff_px'] > 5 or eyes['height_diff_px'] > 3:
+        report.append(f"- 양쪽 눈 크기 차이: 가로 {eyes['width_diff_px']}px, 세로 {eyes['height_diff_px']}px (짝짝이 눈 특성)")
+
+    # 코 분석
+    nose = measurements['nose']
+    report.append(f"\n코 분석:")
+    report.append(f"- 코 길이 (세로): {nose['length_px']}px")
+    report.append(f"- 코 너비 (가로): {nose['width_px']}px")
+
+    # 입 분석
+    mouth = measurements['mouth']
+    report.append(f"\n입 분석:")
+    report.append(f"- 입 크기: {mouth['width_px']}px (가로) × {mouth['height_px']}px (세로)")
+
+    # 입 가로/세로 비율 계산 시 0으로 나누는 경우 방지
+    if mouth['height_px'] != 0:
+        ratio = mouth['width_px'] / mouth['height_px']
+        report.append(f"- 입 가로/세로 비율: {ratio:.1f}:1")
     else:
-        analysis.append("[관록궁] 협소한 이마")
+        report.append("- 입 가로/세로 비율: 계산 불가 (높이가 0)")
 
-    # 재백궁 분석 (코)
-    if proportions['재백궁']['length'] > 0.28:
-        analysis.append("[재백궁] 길고 직선적인 코")
-    elif proportions['재백궁']['straightness'] < 0.15:
-        analysis.append("[재백궁] 곡선형 코")
+    return "\n".join(report)
 
-    # 복덕/천상궁 분석 (볼)
-    양측_차이 = abs(proportions['복덕궁']['fullness'] - proportions['천상궁']['fullness'])
-    if 양측_차이 < 0.05:
-        analysis.append("[복덕/천상궁] 균형 잡힌 볼")
-    else:
-        analysis.append("[복덕/천상궁] 불균형 볼")
-
-    # 인중 분석
-    if proportions['인중']['depth'] > 0.08:
-        analysis.append("[인중] 깊고 긴 인중")
-    else:
-        analysis.append("[인중] 얕은 인중")
-
-    return "\n".join(analysis)
 
 def analyze_face(image_path):
     img = cv2.imread(image_path)
     if img is None:
         raise FileNotFoundError(f"이미지 불러오기 실패: {image_path}")
-    
+
     results = face_mesh.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     if not results.multi_face_landmarks:
         return "얼굴 검출 실패"
-    
+
     img_height, img_width, _ = img.shape
     face_landmarks = results.multi_face_landmarks[0]
-    
-    # 랜드마크 정규화 좌표 변환
-    landmarks = np.array([[lm.x * img_width, lm.y * img_height, lm.z * img_width] 
-                         for lm in face_landmarks.landmark])
-    
-    proportions = get_facial_proportions(landmarks, img_width, img_height)
-    return generate_face_reading(proportions)
+
+    # 랜드마크 좌표 변환 (픽셀 단위)
+    landmarks = np.array([[lm.x * img_width, lm.y * img_height, lm.z * img_width]
+                          for lm in face_landmarks.landmark])
+
+    measurements = get_face_measurements(landmarks, img_width, img_height)
+    return generate_measurement_report(measurements)
+
 
 if __name__ == "__main__":
-    # 하드코딩 이미지 경로 (image_modeling 폴더 기준)
-    image_path = "D:/Coding/AI4FW/image_modeling/suyang.png"  # ← image_modeling 폴더 내 이미지 경로
-    
+    image_path = "D:/Coding/AI4FW/image_modeling/suyang.png"  # 실제 이미지 경로로 변경 필요
+
     try:
         result = analyze_face(image_path)
         print(result)
