@@ -27,11 +27,19 @@ def get_face_measurements(landmarks, img_width, img_height):
     NOSE_LENGTH = [168, 4]  # 코 시작점(미간) ~ 코 끝점
     NOSE_WIDTH = [358, 129]  # 코 양쪽 가장자리 (코의 가로 폭)
     
-    # 입 측정 지점 (수정된 부분)
+    # 입 측정 지점
     MOUTH_WIDTH = [78, 308]  # 입 양쪽 끝
     MOUTH_HEIGHT = [13, 18]  # 입 상하 지점 (위/아래 중앙)
 
+    # 얼굴 전체 측정 지점
+    FACE_CONTOUR = [234, 454]  # 왼쪽/오른쪽 귀 부근 (얼굴 너비)
+    FACE_VERTICAL = [10, 152]  # 이마 상단 ~ 턱 (얼굴 높이)
+
     measurements = {}
+    
+    # 얼굴 전체 크기 계산
+    face_width = np.linalg.norm(landmarks[FACE_CONTOUR[0]] - landmarks[FACE_CONTOUR[1]])
+    face_height = np.linalg.norm(landmarks[FACE_VERTICAL[0]] - landmarks[FACE_VERTICAL[1]])
     
     # 왼쪽 눈 측정
     left_eye_width = np.linalg.norm(landmarks[LEFT_EYE[0]] - landmarks[LEFT_EYE[1]])
@@ -60,7 +68,7 @@ def get_face_measurements(landmarks, img_width, img_height):
         'width_px': int(nose_width)
     }
 
-    # 입 측정 (수정된 부분)
+    # 입 측정
     mouth_width = np.linalg.norm(landmarks[MOUTH_WIDTH[0]] - landmarks[MOUTH_WIDTH[1]])
     mouth_height = np.linalg.norm(landmarks[MOUTH_HEIGHT[0]] - landmarks[MOUTH_HEIGHT[1]])
 
@@ -73,6 +81,47 @@ def get_face_measurements(landmarks, img_width, img_height):
     measurements['mouth'] = {
         'width_px': int(mouth_width),
         'height_px': int(mouth_height)
+    }
+
+    # 눈 위치 비율 계산
+    left_eye_center = (landmarks[33] + landmarks[133]) / 2  # 왼쪽 눈 중심
+    right_eye_center = (landmarks[362] + landmarks[263]) / 2  # 오른쪽 눈 중심
+    
+    # 눈 수평 위치 비율 (얼굴 왼쪽 끝 기준)
+    eye_left_ratio = (left_eye_center[0] - landmarks[FACE_CONTOUR[0]][0]) / face_width
+    eye_right_ratio = (landmarks[FACE_CONTOUR[1]][0] - right_eye_center[0]) / face_width
+    
+    # 눈 간격 비율 (얼굴 너비 대비)
+    inter_eye_distance = np.linalg.norm(left_eye_center - right_eye_center)
+    eye_spacing_ratio = inter_eye_distance / face_width
+    
+    # 코 위치 비율
+    nose_tip = landmarks[4]  # 코 끝 랜드마크
+    nose_horizontal_ratio = (nose_tip[0] - landmarks[FACE_CONTOUR[0]][0]) / face_width
+    nose_vertical_ratio = (nose_tip[1] - landmarks[FACE_VERTICAL[0]][1]) / face_height
+    
+    # 입 위치 비율
+    mouth_center = (landmarks[13] + landmarks[18]) / 2
+    mouth_horizontal_ratio = (mouth_center[0] - landmarks[FACE_CONTOUR[0]][0]) / face_width
+    mouth_vertical_ratio = (mouth_center[1] - landmarks[FACE_VERTICAL[0]][1]) / face_height
+
+    measurements['face_proportions'] = {
+        'face_width_px': int(face_width),
+        'face_height_px': int(face_height),
+        'eye_symmetry': {
+            'left_eye_position_ratio': round(eye_left_ratio, 2),
+            'right_eye_position_ratio': round(eye_right_ratio, 2),
+            'symmetry_balance': round(abs(eye_left_ratio - eye_right_ratio), 2)
+        },
+        'eye_spacing_ratio': round(eye_spacing_ratio, 2),
+        'nose_position': {
+            'horizontal_ratio': round(nose_horizontal_ratio, 2),
+            'vertical_ratio': round(nose_vertical_ratio, 2)
+        },
+        'mouth_position': {
+            'horizontal_ratio': round(mouth_horizontal_ratio, 2),
+            'vertical_ratio': round(mouth_vertical_ratio, 2)
+        }
     }
     return measurements
 
@@ -101,6 +150,36 @@ def generate_measurement_report(measurements):
         report.append(f"- 입 가로/세로 비율: {ratio:.1f}:1")
     else:
         report.append("- 입 가로/세로 비율: 계산 불가 (높이가 0)")
+
+    # 얼굴 비율 분석
+    proportions = measurements['face_proportions']
+    report.append("\n얼굴 비율 분석:")
+    report.append(f"- 얼굴 전체 크기: {proportions['face_width_px']}px (가로) × {proportions['face_height_px']}px (세로)")
+    
+    # 눈 위치 분석
+    eye_sym = proportions['eye_symmetry']
+    report.append("\n눈 위치 분석:")
+    report.append(f"- 왼쪽 눈 위치: 얼굴 왼쪽 끝에서 {eye_sym['left_eye_position_ratio']*100:.0f}% 지점")
+    report.append(f"- 오른쪽 눈 위치: 얼굴 오른쪽 끝에서 {eye_sym['right_eye_position_ratio']*100:.0f}% 지점")
+    if eye_sym['symmetry_balance'] < 0.05:
+        report.append("- 양쪽 눈이 거의 완벽한 대칭을 이룹니다 (불균형 < 5%)")
+    else:
+        report.append(f"- 눈 위치 불균형: {eye_sym['symmetry_balance']*100:.0f}% (기준치 5% 초과)")
+    
+    report.append(f"- 눈 간격: 얼굴 가로 폭의 {proportions['eye_spacing_ratio']*100:.0f}%")
+    
+    # 코 위치 분석
+    nose_pos = proportions['nose_position']
+    report.append("\n코 위치 분석:")
+    report.append(f"- 코 수평 위치: 얼굴 왼쪽 끝에서 {nose_pos['horizontal_ratio']*100:.0f}% 지점")
+    report.append(f"- 코 수직 위치: 이마 상단에서 {nose_pos['vertical_ratio']*100:.0f}% 지점")
+    
+    # 입 위치 분석
+    mouth_pos = proportions['mouth_position']
+    report.append("\n입 위치 분석:")
+    report.append(f"- 입 수평 위치: 얼굴 왼쪽 끝에서 {mouth_pos['horizontal_ratio']*100:.0f}% 지점")
+    report.append(f"- 입 수직 위치: 이마 상단에서 {mouth_pos['vertical_ratio']*100:.0f}% 지점 (턱에서 {100 - mouth_pos['vertical_ratio']*100:.0f}% 지점)")
+    
     return "\n".join(report)
 
 def visualize_landmarks(image_path, landmarks, img_width, img_height):
@@ -145,7 +224,7 @@ def analyze_face(image_path):
     return generate_measurement_report(measurements)
 
 if __name__ == "__main__":
-    image_path = "D:/Coding/AI4FW/image_modeling/changseop.png"  # 실제 이미지 경로로 변경 필요
+    image_path = "D:/Coding/AI4FW/image_modeling/suyang.png"  # 실제 이미지 경로로 변경 필요
     try:
         result = analyze_face(image_path)
         print(result)
