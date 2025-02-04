@@ -224,7 +224,7 @@ def analyze_face(image_path):
     return generate_measurement_report(measurements)
 
 if __name__ == "__main__":
-    image_path = "D:/Coding/AI4FW/image_modeling/suyang.png"  # 실제 이미지 경로로 변경 필요
+    image_path = "D:\Coding\AI4FW\image_modeling\sample_images\suyang.png"  # 실제 이미지 경로로 변경 필요
     try:
         result = analyze_face(image_path)
         print(result)
