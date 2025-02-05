@@ -19,10 +19,8 @@ def generate_measurement_report(measurements):
         report.append(f"- 약간의 눈 모양 차이 (비율 차이: {ratio_diff:.1f})")
     else:
         report.append("- 균형 잡힌 눈 모양")
-
     if eyes['width_diff_px'] > 5 or eyes['height_diff_px'] > 3:
         report.append(f"- 양쪽 눈 크기 차이: 가로 {eyes['width_diff_px']}px, 세로 {eyes['height_diff_px']}px (짝짝이 눈 특성)")
-
     # [추가] 코 비율 분석
     nose = measurements['nose']
     nose_ratio = nose['width_px'] / nose['length_px'] if nose['length_px'] !=0 else 0
@@ -42,12 +40,30 @@ def generate_measurement_report(measurements):
     if mouth['height_px'] != 0:
         ratio = mouth['width_px'] / mouth['height_px']
         report.append(f"- 입 가로/세로 비율: {ratio:.1f}:1")
+        
+        # [추가] 입 모양 분석
+        if ratio > 3.0:
+            report.append("  → 가로로 긴 입 (얇은 입술)")
+        elif ratio > 2.0:
+            report.append("  → 일반적인 입 모양")
+        else:
+            report.append("  → 세로로 두꺼운 입 (두꺼운 입술)")
     else:
         report.append("- 입 가로/세로 비율: 계산 불가 (높이가 0)")
     
     proportions = measurements['face_proportions']
     report.append("\n얼굴 비율 분석:")
     report.append(f"- 얼굴 전체 크기: {proportions['face_width_px']}px (가로) × {proportions['face_height_px']}px (세로)")
+    
+    # [추가] 얼굴 형태 분석
+    face_ratio = proportions['face_width_px'] / proportions['face_height_px'] if proportions['face_height_px'] != 0 else 0
+    report.append(f"- 얼굴 가로/세로 비율: {face_ratio:.1f}:1")
+    if face_ratio > 1.0:
+        report.append("  → 둥근 얼굴 형태 (가로가 긴 편)")
+    elif face_ratio > 0.8:
+        report.append("  → 타원형 얼굴 형태 (균형 잡힌 형태)")
+    else:
+        report.append("  → 긴 얼굴 형태 (세로가 긴 편)")
     
     eye_sym = proportions['eye_symmetry']
     report.append("\n눈 위치 분석:")
