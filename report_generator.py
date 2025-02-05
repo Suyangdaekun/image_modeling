@@ -4,13 +4,37 @@ def generate_measurement_report(measurements):
     report.append(f"눈 분석:")
     report.append(f"- 왼쪽 눈: {eyes['left_width_px']}px (가로) × {eyes['left_height_px']}px (세로)")
     report.append(f"- 오른쪽 눈: {eyes['right_width_px']}px (가로) × {eyes['right_height_px']}px (세로)")
+    
+    # [추가] 눈 가로세로 비율 비교
+    left_ratio = eyes['left_width_px'] / eyes['left_height_px'] if eyes['left_height_px'] !=0 else 0
+    right_ratio = eyes['right_width_px'] / eyes['right_height_px'] if eyes['right_height_px'] !=0 else 0
+    ratio_diff = abs(left_ratio - right_ratio)
+    report.append(f"- 왼쪽 눈 가로세로 비율: {left_ratio:.1f}:1")
+    report.append(f"- 오른쪽 눈 가로세로 비율: {right_ratio:.1f}:1")
+    
+    # [추가] 짝짝이 눈 판단
+    if ratio_diff > 0.4:  # 비율 차이 기준
+        report.append(f"⚠️ 짝짝이 눈 특성 (비율 차이: {ratio_diff:.1f})")
+    elif ratio_diff > 0.2:
+        report.append(f"- 약간의 눈 모양 차이 (비율 차이: {ratio_diff:.1f})")
+    else:
+        report.append("- 균형 잡힌 눈 모양")
+
     if eyes['width_diff_px'] > 5 or eyes['height_diff_px'] > 3:
         report.append(f"- 양쪽 눈 크기 차이: 가로 {eyes['width_diff_px']}px, 세로 {eyes['height_diff_px']}px (짝짝이 눈 특성)")
-    
+
+    # [추가] 코 비율 분석
     nose = measurements['nose']
+    nose_ratio = nose['width_px'] / nose['length_px'] if nose['length_px'] !=0 else 0
     report.append(f"\n코 분석:")
-    report.append(f"- 코 길이 (세로): {nose['length_px']}px")
-    report.append(f"- 코 너비 (가로): {nose['width_px']}px")
+    report.append(f"- 길이: {nose['length_px']}px, 너비: {nose['width_px']}px")
+    report.append(f"- 너비/길이 비율: {nose_ratio:.1f}:1")
+    if nose_ratio > 0.8:
+        report.append("  → 넓적한 코 형태 (주먹코)")
+    elif nose_ratio < 0.5:
+        report.append("  → 가늘고 긴 코 형태 (민코)")
+    else:
+        report.append("  → 일반적인 코 비율")
     
     mouth = measurements['mouth']
     report.append(f"\n입 분석:")
