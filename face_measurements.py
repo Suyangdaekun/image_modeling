@@ -18,6 +18,31 @@ def get_face_measurements(landmarks, img_width, img_height):
     FACE_CONTOUR = [234, 454]  # 왼쪽/오른쪽 귀 부근 (얼굴 너비)
     FACE_VERTICAL = [10, 152]  # 이마 상단 ~ 턱 (얼굴 높이)
     
+    # 새로운 랜드마크 인덱스 추가
+    FOREHEAD = [10, 109]  # 이마 상단과 하단
+    FOREHEAD_WIDTH = [338, 108]  # 이마 좌우 끝점
+    
+    EYEBROWS = {
+        'left': [296, 283],  # 왼쪽 눈썹 시작과 끝
+        'right': [70, 53]    # 오른쪽 눈썹 시작과 끝
+    }
+    
+    PHILTRUM = [164, 13]  # 미간 시작점과 윗입술 중앙
+    
+    NASOLABIAL = [4, 164]  # 코끝에서 미간까지
+    
+    JAW = {
+        'top': [152],      # 턱 상단
+        'bottom': [175],   # 턱 하단
+        'width': [234, 454]  # 턱 좌우 폭
+    }
+    
+    CHEEKS = {
+        'left': [192, 213],   # 왼쪽 볼 상하
+        'right': [412, 433],  # 오른쪽 볼 상하
+        'width': [123, 352]   # 볼 좌우 최대 폭
+    }
+
     measurements = {}
     
     # 얼굴 전체 크기 계산
@@ -80,6 +105,54 @@ def get_face_measurements(landmarks, img_width, img_height):
     mouth_horizontal_ratio = (mouth_center[0] - landmarks[FACE_CONTOUR[0]][0]) / face_width
     mouth_vertical_ratio = (mouth_center[1] - landmarks[FACE_VERTICAL[0]][1]) / face_height
     
+    # 이마 측정
+    forehead_height = np.linalg.norm(landmarks[FOREHEAD[0]] - landmarks[FOREHEAD[1]])
+    forehead_width = np.linalg.norm(landmarks[FOREHEAD_WIDTH[0]] - landmarks[FOREHEAD_WIDTH[1]])
+    measurements['forehead'] = {
+        'width_px': int(forehead_width),
+        'height_px': int(forehead_height)
+    }
+    
+    # 눈썹 측정
+    left_eyebrow_length = np.linalg.norm(landmarks[EYEBROWS['left'][0]] - landmarks[EYEBROWS['left'][1]])
+    right_eyebrow_length = np.linalg.norm(landmarks[EYEBROWS['right'][0]] - landmarks[EYEBROWS['right'][1]])
+    measurements['eyebrows'] = {
+        'left_length_px': int(left_eyebrow_length),
+        'right_length_px': int(right_eyebrow_length)
+    }
+    
+    # 미간 측정
+    philtrum_length = np.linalg.norm(landmarks[PHILTRUM[0]] - landmarks[PHILTRUM[1]])
+    measurements['philtrum'] = {
+        'length_px': int(philtrum_length)
+    }
+    
+    # 인중 측정
+    nasolabial_length = np.linalg.norm(landmarks[NASOLABIAL[0]] - landmarks[NASOLABIAL[1]])
+    measurements['nasolabial'] = {
+        'length_px': int(nasolabial_length)
+    }
+    
+    # 턱 측정
+    jaw_height = np.linalg.norm(landmarks[JAW['top'][0]] - landmarks[JAW['bottom'][0]])
+    jaw_width = np.linalg.norm(landmarks[JAW['width'][0]] - landmarks[JAW['width'][1]])
+    measurements['jaw'] = {
+        'width_px': int(jaw_width),
+        'height_px': int(jaw_height)
+    }
+    
+    # 볼 측정
+    left_cheek_height = np.linalg.norm(landmarks[CHEEKS['left'][0]] - landmarks[CHEEKS['left'][1]])
+    right_cheek_height = np.linalg.norm(landmarks[CHEEKS['right'][0]] - landmarks[CHEEKS['right'][1]])
+    cheek_width = np.linalg.norm(landmarks[CHEEKS['width'][0]] - landmarks[CHEEKS['width'][1]])
+    
+    measurements['cheeks'] = {
+        'left_width_px': int(cheek_width / 2),  # 대략적으로 좌우 나누기
+        'left_height_px': int(left_cheek_height),
+        'right_width_px': int(cheek_width / 2),
+        'right_height_px': int(right_cheek_height)
+    }
+
     measurements['face_proportions'] = {
         'face_width_px': int(face_width),
         'face_height_px': int(face_height),
