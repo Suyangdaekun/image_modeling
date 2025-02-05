@@ -17,6 +17,7 @@ def visualize_landmarks(image_path, landmarks, img_width, img_height):
         x, y = int(landmark[0]), int(landmark[1])
         cv2.circle(img, (x, y), 2, (0, 255, 0), -1)  # 초록색 점으로 표시
     
-    cv2.imshow("Landmarks", img)
+    resized_img = cv2.resize(img, (1000, 700))
+    cv2.imshow("Landmarks", resized_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

@@ -31,14 +31,14 @@ def generate_measurement_report(measurements):
     report.append(f"- 두 눈의 총 면적: {total_eye_area} px²")
     report.append(f"- 두 눈이 얼굴에서 차지하는 비율: {eye_face_ratio:.1f}%")
     
-    if eye_face_ratio > 15:
+    if eye_face_ratio > 3:
         report.append("  → 큰 눈 (얼굴에서 차지하는 비율이 높음)")
-    elif eye_face_ratio > 10:
+    elif eye_face_ratio > 1.5:
         report.append("  → 일반적인 크기의 눈")
     else:
         report.append("  → 작은 눈 (얼굴에서 차지하는 비율이 낮음)")
     
-    # [추가] 눈 가로세로 비율 비교
+    # 눈 가로세로 비율 비교
     left_ratio = eyes['left_width_px'] / eyes['left_height_px'] if eyes['left_height_px'] != 0 else 0
     right_ratio = eyes['right_width_px'] / eyes['right_height_px'] if eyes['right_height_px'] != 0 else 0
     ratio_diff = abs(left_ratio - right_ratio)
@@ -51,7 +51,16 @@ def generate_measurement_report(measurements):
         report.append(f"- 약간의 눈 모양 차이 (비율 차이: {ratio_diff:.1f})")
     else:
         report.append("- 균형 잡힌 눈 모양")
-    
+
+    eye_width_ratio = ((eyes['left_width_px'] + eyes['right_width_px']) / 2) / face_proportions['face_width_px'] if (eyes['left_width_px'] + eyes['right_width_px'] / 2) != 0 else 0
+    report.append(f"- 눈의 너비/얼굴의 너비: {eye_width_ratio:.1f}:1")
+    if eye_width_ratio > 0.25:
+        report.append("  → 사교적인 눈")
+    elif eye_width_ratio < 0.15:
+        report.append("  → 신중한 눈")
+    else:
+        report.append("  → 일반적인 눈 비율")
+
     # 코 분석
     nose = measurements['nose']
     nose_area = nose['width_px'] * nose['length_px']
@@ -61,20 +70,28 @@ def generate_measurement_report(measurements):
     report.append(f"- 길이: {nose['length_px']}px, 너비: {nose['width_px']}px")
     report.append(f"- 코 면적: {nose_area} px²")
     report.append(f"- 코가 얼굴에서 차지하는 비율: {nose_face_ratio:.1f}%")
-    
-    if nose_face_ratio > 8:
+    if nose_face_ratio > 10:
         report.append("  → 큰 코 (얼굴에서 차지하는 비율이 높음)")
-    elif nose_face_ratio > 5:
+    elif nose_face_ratio > 7:
         report.append("  → 일반적인 크기의 코")
     else:
         report.append("  → 작은 코 (얼굴에서 차지하는 비율이 낮음)")
     
-    nose_ratio = nose['width_px'] / nose['length_px'] if nose['length_px'] != 0 else 0
-    report.append(f"- 너비/길이 비율: {nose_ratio:.1f}:1")
-    if nose_ratio > 1:
-        report.append("  → 넓적한 코 형태 (주먹코)")
-    elif nose_ratio < 0.7:
-        report.append("  → 가늘고 긴 코 형태 (민코)")
+    nose_height_ratio = nose['length_px'] / face_proportions['face_height_px'] if nose['length_px'] != 0 else 0
+    report.append(f"- 코의 높이/얼굴 높이: {nose_height_ratio:.1f}:1")
+    if nose_height_ratio > 0.35:
+        report.append("  → 두드러진 코(독특한 인상)")
+    elif nose_height_ratio < 0.25:
+        report.append("  → 민코(납작한 코)")
+    else:
+        report.append("  → 일반적인 코 비율")
+
+    nose_width_ratio = nose['width_px'] / ((eyes['left_width_px'] + eyes['right_width_px']) / 2) if nose['width_px'] != 0 else 0
+    report.append(f"- 코의 너비/눈의 너비: {nose_width_ratio:.1f}:1")
+    if nose_width_ratio > 1.7:
+        report.append("  → 주먹코")
+    elif nose_width_ratio < 1.3:
+        report.append("  → 날카로운 코")
     else:
         report.append("  → 일반적인 코 비율")
     
@@ -88,9 +105,9 @@ def generate_measurement_report(measurements):
     report.append(f"- 입 면적: {mouth_area} px²")
     report.append(f"- 입이 얼굴에서 차지하는 비율: {mouth_face_ratio:.1f}%")
     
-    if mouth_face_ratio > 6:
+    if mouth_face_ratio > 4:
         report.append("  → 큰 입 (얼굴에서 차지하는 비율이 높음)")
-    elif mouth_face_ratio > 3:
+    elif mouth_face_ratio > 2:
         report.append("  → 일반적인 크기의 입")
     else:
         report.append("  → 작은 입 (얼굴에서 차지하는 비율이 낮음)")
