@@ -19,8 +19,8 @@ def get_face_measurements(landmarks, img_width, img_height):
     FACE_VERTICAL = [10, 152]  # 이마 상단 ~ 턱 (얼굴 높이)
     
     # 새로운 랜드마크 인덱스 추가
-    FOREHEAD = [10, 109]  # 이마 상단과 하단
-    FOREHEAD_WIDTH = [338, 108]  # 이마 좌우 끝점
+    FOREHEAD = [10, 8]  # 이마 상단과 하단
+    FOREHEAD_WIDTH = [54, 284]  # 이마 좌우 끝점
     
     EYEBROWS = {
         'left': [70, 55],  # 왼쪽 눈썹 시작과 끝

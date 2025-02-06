@@ -140,11 +140,11 @@ def generate_measurement_report(measurements):
         report.append(f"- 이마가 얼굴에서 차지하는 비율: {forehead_face_ratio:.1f}%")
         
         if forehead_face_ratio > 4.5:
-            report.append("  → 넓은 이마 (얼굴에서 차지하는 비율이 높음)")
+            report.append("  → 넓은 이마")
         elif forehead_face_ratio > 2.5:
             report.append("  → 일반적인 크기의 이마")
         else:
-            report.append("  → 좁은 이마 (얼굴에서 차지하는 비율이 낮음)")
+            report.append("  → 좁은 이마")
 
     # 눈썹 분석 추가
     eyebrows = measurements.get('eyebrows', {})
