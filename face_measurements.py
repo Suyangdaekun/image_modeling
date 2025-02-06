@@ -27,20 +27,20 @@ def get_face_measurements(landmarks, img_width, img_height):
         'right': [285, 300]    # 오른쪽 눈썹 시작과 끝
     }
     
-    PHILTRUM = [164, 13]  # 미간 시작점과 윗입술 중앙
-    
-    NASOLABIAL = [4, 164]  # 코끝에서 미간까지
+    GLABELLA = [55, 285]  # 미간은 왼쪽 눈썹 오른끝에서 오른쪽 눈썹 왼끝까지
+
+    PHILTRUM = [2, 0]  # 인중은 코끝에서 입술까지
     
     JAW = {
-        'top': [152],      # 턱 상단
-        'bottom': [175],   # 턱 하단
-        'width': [234, 454]  # 턱 좌우 폭
+        'top': [17],      # 턱 상단
+        'bottom': [152],   # 턱 하단
+        'width': [150, 379]  # 턱 좌우 폭
     }
     
     CHEEKS = {
-        'left': [192, 213],   # 왼쪽 볼 상하
-        'right': [412, 433],  # 오른쪽 볼 상하
-        'width': [123, 352]   # 볼 좌우 최대 폭
+        'left': [116, 192],   # 왼쪽 볼 상하
+        'right': [345, 416],  # 오른쪽 볼 상하
+        'width': [93, 323]   # 볼 좌우 최대 폭
     }
 
     measurements = {}
@@ -122,15 +122,15 @@ def get_face_measurements(landmarks, img_width, img_height):
     }
     
     # 미간 측정
+    glabella_length = np.linalg.norm(landmarks[GLABELLA[0]] - landmarks[GLABELLA[1]])
+    measurements['glabella'] = {
+        'length_px': int(glabella_length)
+    }
+
+    # 인중 측정
     philtrum_length = np.linalg.norm(landmarks[PHILTRUM[0]] - landmarks[PHILTRUM[1]])
     measurements['philtrum'] = {
         'length_px': int(philtrum_length)
-    }
-    
-    # 인중 측정
-    nasolabial_length = np.linalg.norm(landmarks[NASOLABIAL[0]] - landmarks[NASOLABIAL[1]])
-    measurements['nasolabial'] = {
-        'length_px': int(nasolabial_length)
     }
     
     # 턱 측정
@@ -147,9 +147,9 @@ def get_face_measurements(landmarks, img_width, img_height):
     cheek_width = np.linalg.norm(landmarks[CHEEKS['width'][0]] - landmarks[CHEEKS['width'][1]])
     
     measurements['cheeks'] = {
-        'left_width_px': int(cheek_width / 2),  # 대략적으로 좌우 나누기
+        'left_width_px': int(cheek_width / 3),
         'left_height_px': int(left_cheek_height),
-        'right_width_px': int(cheek_width / 2),
+        'right_width_px': int(cheek_width / 3),
         'right_height_px': int(right_cheek_height)
     }
 

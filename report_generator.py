@@ -106,21 +106,21 @@ def generate_measurement_report(measurements):
     report.append(f"- 입이 얼굴에서 차지하는 비율: {mouth_face_ratio:.1f}%")
     
     if mouth_face_ratio > 4:
-        report.append("  → 큰 입 (얼굴에서 차지하는 비율이 높음)")
+        report.append("  → 큰 입")
     elif mouth_face_ratio > 2:
         report.append("  → 일반적인 크기의 입")
     else:
-        report.append("  → 작은 입 (얼굴에서 차지하는 비율이 낮음)")
+        report.append("  → 작은 입")
     
     if mouth['height_px'] != 0:
         ratio = mouth['width_px'] / mouth['height_px']
         report.append(f"- 입 가로/세로 비율: {ratio:.1f}:1")
         if ratio > 3.0:
-            report.append("  → 가로로 긴 입 (얇은 입술)")
+            report.append("  → 얇은 입술")
         elif ratio > 2.0:
-            report.append("  → 일반적인 입 모양")
+            report.append("  → 일반적인 입술")
         else:
-            report.append("  → 세로로 두꺼운 입 (두꺼운 입술)")
+            report.append("  → 두꺼운 입술")
     else:
         report.append("- 입 가로/세로 비율: 계산 불가 (높이가 0)")
 
@@ -161,49 +161,49 @@ def generate_measurement_report(measurements):
         report.append(f"- 평균 눈썹 길이: {avg_eyebrow_length:.1f}px")
         
         if avg_eyebrow_length > 40:
-            report.append("  → 긴 눈썹 (일반적으로 긴 형태)")
+            report.append("  → 긴 눈썹")
         elif avg_eyebrow_length > 20:
             report.append("  → 중간 길이의 눈썹")
         else:
-            report.append("  → 짧은 눈썹 (짧고 굵은 형태)")
+            report.append("  → 짧은 눈썹")
 
     # 미간 분석 추가
+    glabella = measurements.get('glabella', {})
+    glabella_length = glabella.get('length_px', 0)
+    glabella_face_ratio = (glabella_length / face_proportions['face_width_px']) * 100 if face_proportions['face_width_px'] != 0 else 0
+    
+    report.append(f"\n미간 분석:")
+    if glabella_length == 0:
+        report.append("  → 데이터 부족: 미간 정보를 제공해주세요.")
+    else:
+        report.append(f"- 미간 길이: {glabella_length}px")
+        report.append(f"- 미간이 얼굴 가로 길이에서 차지하는 비율: {glabella_face_ratio:.1f}%")
+        
+        if glabella_face_ratio > 8:
+            report.append("  → 긴 미간")
+        elif glabella_face_ratio > 5:
+            report.append("  → 일반적인 길이의 미간")
+        else:
+            report.append("  → 짧은 미간")
+
+    # 인중 분석 추가
     philtrum = measurements.get('philtrum', {})
     philtrum_length = philtrum.get('length_px', 0)
     philtrum_face_ratio = (philtrum_length / face_proportions['face_height_px']) * 100 if face_proportions['face_height_px'] != 0 else 0
     
-    report.append(f"\n미간 분석:")
-    if philtrum_length == 0:
-        report.append("  → 데이터 부족: 미간 정보를 제공해주세요.")
-    else:
-        report.append(f"- 미간 길이: {philtrum_length}px")
-        report.append(f"- 미간이 얼굴 세로 길이에서 차지하는 비율: {philtrum_face_ratio:.1f}%")
-        
-        if philtrum_face_ratio > 10:
-            report.append("  → 긴 미간 (얼굴 세로 길이에 비해 길어 보임)")
-        elif philtrum_face_ratio > 7:
-            report.append("  → 일반적인 길이의 미간")
-        else:
-            report.append("  → 짧은 미간 (얼굴 세로 길이에 비해 짧아 보임)")
-
-    # 인중 분석 추가
-    nasolabial = measurements.get('nasolabial', {})
-    nasolabial_length = nasolabial.get('length_px', 0)
-    nasolabial_face_ratio = (nasolabial_length / face_proportions['face_height_px']) * 100 if face_proportions['face_height_px'] != 0 else 0
-    
     report.append(f"\n인중 분석:")
-    if nasolabial_length == 0:
+    if philtrum_length == 0:
         report.append("  → 데이터 부족: 인중 정보를 제공해주세요.")
     else:
-        report.append(f"- 인중 길이: {nasolabial_length}px")
-        report.append(f"- 인중이 얼굴 세로 길이에서 차지하는 비율: {nasolabial_face_ratio:.1f}%")
+        report.append(f"- 인중 길이: {philtrum_length}px")
+        report.append(f"- 인중이 얼굴 세로 길이에서 차지하는 비율: {philtrum_face_ratio:.1f}%")
         
-        if nasolabial_face_ratio > 8:
-            report.append("  → 긴 인중 (얼굴 세로 길이에 비해 길어 보임)")
-        elif nasolabial_face_ratio > 5:
+        if philtrum_face_ratio > 10:
+            report.append("  → 긴 인중")
+        elif philtrum_face_ratio > 7:
             report.append("  → 일반적인 길이의 인중")
         else:
-            report.append("  → 짧은 인중 (얼굴 세로 길이에 비해 짧아 보임)")
+            report.append("  → 짧은 인중")
     
     # 턱 분석 추가
     jaw = measurements.get('jaw', {})
@@ -227,7 +227,7 @@ def generate_measurement_report(measurements):
         elif jaw_ratio > 1.3:
             report.append("  → 일반적인 턱 형태")
         else:
-            report.append("  → 뾰족한 턱 형태 (뾰족턱)")
+            report.append("  → 뾰족한 턱 형태 (뾰족 턱)")
     
     # 볼 분석 추가
     cheeks = measurements.get('cheeks', {})
@@ -250,10 +250,10 @@ def generate_measurement_report(measurements):
         report.append(f"- 볼이 얼굴에서 차지하는 비율: {cheek_face_ratio:.1f}%")
         
         if cheek_face_ratio > 30:
-            report.append("  → 큰 볼 (얼굴에서 차지하는 비율이 높음)")
+            report.append("  → 큰 볼")
         elif cheek_face_ratio > 20:
             report.append("  → 일반적인 크기의 볼")
         else:
-            report.append("  → 작은 볼 (얼굴에서 차지하는 비율이 낮음)")
+            report.append("  → 작은 볼")
     
     return "\n".join(report)

@@ -6,13 +6,13 @@ def visualize_landmarks(image_path, landmarks, img_width, img_height):
         raise FileNotFoundError(f"이미지 불러오기 실패: {image_path}")
     
     # 특정 랜드마크 강조
-    left_eyebrow_indices = [76, 306]  # 입의 상하 지점
+    left_eyebrow_indices = [55, 285]  # 입의 상하 지점
     for idx in left_eyebrow_indices:
         x, y = int(landmarks[idx][0]), int(landmarks[idx][1])
         cv2.circle(img, (x, y), 5, (0, 0, 255), -1)  # 빨간색 점으로 표시
         cv2.putText(img, str(idx), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
-    right_eyebrow_indices = [0, 17]  # 입의 상하 지점
+    right_eyebrow_indices = [2, 0]  # 입의 상하 지점
     for idx in right_eyebrow_indices:
         x, y = int(landmarks[idx][0]), int(landmarks[idx][1])
         cv2.circle(img, (x, y), 5, (0, 0, 255), -1)  # 빨간색 점으로 표시
