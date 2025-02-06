@@ -9,15 +9,15 @@ def generate_measurement_report(measurements):
     report.append(f"- 얼굴 전체 면적: {face_area} px²")
     
     # 얼굴 비율 분석
-    face_ratio = face_proportions['face_width_px'] / face_proportions['face_height_px'] if face_proportions['face_height_px'] != 0 else 0
+    face_ratio = face_proportions['face_height_px'] / face_proportions['face_width_px'] if face_proportions['face_width_px'] != 0 else 0
     report.append("얼굴 비율 분석:")
-    report.append(f"- 얼굴 가로/세로 비율: {face_ratio:.1f}:1")
-    if face_ratio > 1.0:
-        report.append("  → 둥근 얼굴 형태 (가로가 긴 편)")
-    elif face_ratio > 0.8:
+    report.append(f"- 얼굴 높이/너비 비율: {face_ratio:.1f}:1")
+    if face_ratio > 1.4:
+        report.append("  → 긴 얼굴 형태 (세로가 긴 편)")
+    elif face_ratio > 1.2:
         report.append("  → 타원형 얼굴 형태 (균형 잡힌 형태)")
     else:
-        report.append("  → 긴 얼굴 형태 (세로가 긴 편)")
+        report.append("  → 둥근 얼굴 형태 (가로가 긴 편)")
     
     # 눈 분석
     report.append(f"\n눈 분석:")
@@ -139,9 +139,9 @@ def generate_measurement_report(measurements):
         report.append(f"- 이마 면적: {forehead_area} px²")
         report.append(f"- 이마가 얼굴에서 차지하는 비율: {forehead_face_ratio:.1f}%")
         
-        if forehead_face_ratio > 25:
+        if forehead_face_ratio > 4.5:
             report.append("  → 넓은 이마 (얼굴에서 차지하는 비율이 높음)")
-        elif forehead_face_ratio > 15:
+        elif forehead_face_ratio > 2.5:
             report.append("  → 일반적인 크기의 이마")
         else:
             report.append("  → 좁은 이마 (얼굴에서 차지하는 비율이 낮음)")
@@ -160,9 +160,9 @@ def generate_measurement_report(measurements):
         report.append(f"- 오른쪽 눈썹 길이: {right_eyebrow_length}px")
         report.append(f"- 평균 눈썹 길이: {avg_eyebrow_length:.1f}px")
         
-        if avg_eyebrow_length > 60:
+        if avg_eyebrow_length > 40:
             report.append("  → 긴 눈썹 (일반적으로 긴 형태)")
-        elif avg_eyebrow_length > 40:
+        elif avg_eyebrow_length > 20:
             report.append("  → 중간 길이의 눈썹")
         else:
             report.append("  → 짧은 눈썹 (짧고 굵은 형태)")

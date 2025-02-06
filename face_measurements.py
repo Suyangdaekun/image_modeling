@@ -11,8 +11,8 @@ def get_face_measurements(landmarks, img_width, img_height):
     NOSE_WIDTH = [358, 129]  # 코 양쪽 가장자리 (코의 가로 폭)
     
     # 입 측정 지점
-    MOUTH_WIDTH = [78, 308]  # 입 양쪽 끝
-    MOUTH_HEIGHT = [13, 18]  # 입 상하 지점 (위/아래 중앙)
+    MOUTH_WIDTH = [76, 306]  # 입 양쪽 끝
+    MOUTH_HEIGHT = [0, 17]  # 입 상하 지점 (위/아래 중앙)
     
     # 얼굴 전체 측정 지점
     FACE_CONTOUR = [234, 454]  # 왼쪽/오른쪽 귀 부근 (얼굴 너비)
@@ -23,8 +23,8 @@ def get_face_measurements(landmarks, img_width, img_height):
     FOREHEAD_WIDTH = [338, 108]  # 이마 좌우 끝점
     
     EYEBROWS = {
-        'left': [296, 283],  # 왼쪽 눈썹 시작과 끝
-        'right': [70, 53]    # 오른쪽 눈썹 시작과 끝
+        'left': [70, 55],  # 왼쪽 눈썹 시작과 끝
+        'right': [285, 300]    # 오른쪽 눈썹 시작과 끝
     }
     
     PHILTRUM = [164, 13]  # 미간 시작점과 윗입술 중앙

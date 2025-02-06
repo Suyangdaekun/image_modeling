@@ -32,7 +32,7 @@ def analyze_face(image_path):
                           for lm in face_landmarks.landmark])
     
     # 랜드마크 시각화
-    # visualize_landmarks(image_path, landmarks, img_width, img_height)
+    visualize_landmarks(image_path, landmarks, img_width, img_height)
     
     # 얼굴 측정값 계산
     measurements = get_face_measurements(landmarks, img_width, img_height)
